@@ -1,0 +1,1 @@
+Add custom fields to wp-admin/profile.php so admin can edit other users custom fields
