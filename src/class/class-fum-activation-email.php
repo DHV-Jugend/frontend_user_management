@@ -163,7 +163,7 @@ class Fum_Activation_Email
 
         $message .= 'Wir wünschen dir viel Spaß mit der DHV-Jugend!';
         try {
-            Ems_Event_Registration::send_mail_via_smtp($user_email, $title, $message);
+            Fum_Mail::sendMail($user_email, $title, $message);
         } catch (Exception $e) {
             echo $user_email . ' ' . $title . ' ' . $message . "<br/><br/>";
             echo $e->getMessage();

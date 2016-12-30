@@ -542,10 +542,8 @@ class Fum_Register_Login_Form_Controller
          * @param string $key The activation key.
          */
         $message = apply_filters('retrieve_password_message', $message, $key);
-        Ems_Event_Registration::send_mail_via_smtp($user_email, $title, $message);
-//		if ( $message && ! wp_mail( $user_email, $title, $message ) )
-//			wp_die( __( 'The e-mail could not be sent.' ) . "<br />\n" . __( 'Possible reason: your host may have disabled the mail() function.' ) );
-
+        Fum_Mail::sendMail($user_email, $title, $message);
+        
         return true;
     }
 }
