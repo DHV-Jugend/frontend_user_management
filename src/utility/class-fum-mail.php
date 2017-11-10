@@ -45,8 +45,15 @@ class Fum_Mail
         $mail->Subject = $subject;
         $mail->Body = $message;
 
-        if (!$mail->send()) {
-            throw new Exception("Could not sent mail, maybe your server has a problem? " . $mail->ErrorInfo);
+        if (defined('WRITE_MAILS_TO_FILE') && WRITE_MAILS_TO_FILE) {
+            error_log('SEND MAIL');
+            error_log('TO: ' . var_export($mail->getToAddresses(), true));
+            error_log('Subject: ' . $mail->Subject);
+            error_log('Body: ' . $mail->Body);
+        } else {
+            if (!$mail->send()) {
+                throw new Exception("Could not sent mail, maybe your server has a problem? " . $mail->ErrorInfo);
+            }
         }
     }
 }
