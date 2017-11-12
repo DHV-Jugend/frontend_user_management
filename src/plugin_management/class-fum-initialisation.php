@@ -17,31 +17,36 @@ class Fum_Initialisation
         self::add_action_hooks();
         self::add_filter_hooks();
 
-        add_shortcode(Fum_Conf::$fum_register_login_page_name, array('Fum_Register_Login_Form_Controller', 'create_register_login_form'));
-        add_shortcode(Fum_Conf::$fum_edit_page_name, array('Fum_Edit_Form_Controller', 'create_edit_form'));
-        add_shortcode(Fum_Conf::$fum_event_registration_page, array('Fum_Event_Registration_Controller', 'create_event_registration_form'));
-        add_shortcode('ems_eventverwaltung', array('Fum_Registered_Event_list', 'create_applied_event_form'));
-        add_shortcode('recent_posts', array('Fum_Initialisation', 'my_recent_posts_shortcode'));
-        add_shortcode('contact_form', array('Fum_Contact_Form_Controller', 'create_contact_form'));
+        add_shortcode(
+            Fum_Conf::$fum_register_login_page_name,
+            ['Fum_Register_Login_Form_Controller', 'create_register_login_form']
+        );
+        add_shortcode(Fum_Conf::$fum_edit_page_name, ['Fum_Edit_Form_Controller', 'create_edit_form']);
+        add_shortcode(
+            Fum_Conf::$fum_event_registration_page,
+            ['Fum_Event_Registration_Controller', 'create_event_registration_form']
+        );
+        add_shortcode('ems_eventverwaltung', ['Fum_Registered_Event_list', 'create_applied_event_form']);
+        add_shortcode('recent_posts', ['Fum_Initialisation', 'my_recent_posts_shortcode']);
+        add_shortcode('contact_form', ['Fum_Contact_Form_Controller', 'create_contact_form']);
     }
 
     public static function my_recent_posts_shortcode($atts)
     {
         $q = new WP_Query(
-            array('orderby' => 'date', 'posts_per_page' => '1')
+            ['orderby' => 'date', 'posts_per_page' => '1']
         );
 
-        $list = '<ul class="recent-posts">';
+        $list = '<div class="latest-post">';
 
         while ($q->have_posts()) : $q->the_post();
-
-            $list .= '<li><h3>' . get_the_title() . '</h3><i>' . get_the_date() . '</i>' . '<br/><p>' . get_the_excerpt() . '</p></li>';
-
+            $heading = '<h3><a href="'.get_post_permalink(get_the_ID()) .'">' . get_the_title() . '</a></h3>';
+            $list .= $heading . '<i>' . get_the_date() . '</i>' . '<br/><p>' . get_the_excerpt() . '</p>';
         endwhile;
 
         wp_reset_query();
 
-        return $list . '</ul>';
+        return $list . '</div>';
     }
 
 
@@ -49,50 +54,50 @@ class Fum_Initialisation
     {
 
         //Action hook for changing
-        add_action('get_header', array('Fum_Initialisation', 'check_shortcode'));
+        add_action('get_header', ['Fum_Initialisation', 'check_shortcode']);
         //Register plugin settings
-        add_action('admin_init', array('Fum_Option_Page_Controller', 'register_settings'));
+        add_action('admin_init', ['Fum_Option_Page_Controller', 'register_settings']);
         //Create plugin admin menu page
-        add_action('admin_menu', array('Fum_Option_Page_Controller', 'create_menu'));
+        add_action('admin_menu', ['Fum_Option_Page_Controller', 'create_menu']);
 
-        add_action('init', array('Fum_Post', 'fum_register_post_type'));
-        add_action('init', array(new Fum_Front_End_Form(), 'buffer_content_if_front_end_form'));
+        add_action('init', ['Fum_Post', 'fum_register_post_type']);
+        add_action('init', [new Fum_Front_End_Form(), 'buffer_content_if_front_end_form']);
 
-        add_action('plugins_loaded', array('Fum_Initialisation', 'hideAdminBar'));
+        add_action('plugins_loaded', ['Fum_Initialisation', 'hideAdminBar']);
 
         //Create activation code on user_register and add it to the user meta
-        add_action('user_register', array('Fum_Activation_Email', 'new_user_registered'));
+        add_action('user_register', ['Fum_Activation_Email', 'new_user_registered']);
 
         //Check if url contains activation key and if yes, prepend "You have successfully your account etc.."
-        add_filter('the_content', array('Fum_Activation_Email', 'activate_user'));
+        add_filter('the_content', ['Fum_Activation_Email', 'activate_user']);
 
         if (get_option(Fum_Conf::$fum_register_form_use_activation_mail_option)) {
             //Check on login  if user is activated
-            add_filter('wp_authenticate_user', array('Fum_Activation_Email', 'authenticate'), 10, 1);
+            add_filter('wp_authenticate_user', ['Fum_Activation_Email', 'authenticate'], 10, 1);
         }
 
         //Delete not activated users, if the home url changes, because the activation link may returns a 404 then
-        add_action('update_option_home', array('Fum_Activation_Email', 'delete_not_activated_users'));
-        add_action('update_option_siteurl', array('Fum_Activation_Email', 'delete_not_activated_users'));
+        add_action('update_option_home', ['Fum_Activation_Email', 'delete_not_activated_users']);
+        add_action('update_option_siteurl', ['Fum_Activation_Email', 'delete_not_activated_users']);
 
 
         //Redirect wp-admin/profile.php (Only redirect if the user edits his OWN profile!)
-        add_action('show_user_profile', array('Fum_Redirect', 'redirect_own_profile_edit'));
+        add_action('show_user_profile', ['Fum_Redirect', 'redirect_own_profile_edit']);
 
         if (get_option(Fum_Conf::$fum_general_option_group_hide_wp_login_php)) {
             //Redirect wp-login.php
-            add_action('login_init', array('Fum_Redirect', 'redirect_wp_login_php'));
+            add_action('login_init', ['Fum_Redirect', 'redirect_wp_login_php']);
         }
 
         if (get_option(Fum_Conf::$fum_general_option_group_hide_dashboard_from_non_admin)) {
-            add_action('wp_dashboard_setup', array('Fum_Redirect', 'redirect_to_home_if_user_cannot_manage_options'));
+            add_action('wp_dashboard_setup', ['Fum_Redirect', 'redirect_to_home_if_user_cannot_manage_options']);
         }
     }
 
     private static function add_filter_hooks()
     {
-        add_filter('force_ssl', array(new Fum_Front_End_Form(), 'use_ssl_on_front_end_form'), 1, 3);
-        add_filter('logout_url', array('Fum_Redirect', 'redirect_wp_logout'), 10, 2);
+        add_filter('force_ssl', [new Fum_Front_End_Form(), 'use_ssl_on_front_end_form'], 1, 3);
+        add_filter('logout_url', ['Fum_Redirect', 'redirect_wp_logout'], 10, 2);
     }
 
     /**
@@ -148,7 +153,7 @@ class Fum_Initialisation
             if (0 === stripos($shortcode_tag, Fum_Conf::FUM_NAME_PREFIX)) {
                 $post = get_post();
                 //Maybe the current site is not a post, not sure when this happens
-                if (NULL === $post) {
+                if (null === $post) {
                     continue;
                 }
                 //If there are no object vars, then it's not possible that there is a shortcode tag
@@ -167,7 +172,7 @@ class Fum_Initialisation
                     case 2:
                         $class = $callback[0];
                         $function = $callback[1] . '_header';
-                        $callback = array($class, $function);
+                        $callback = [$class, $function];
                         if (is_callable($callback)) {
                             call_user_func($callback);
                         }
