@@ -61,20 +61,14 @@ class Fum_Event_Registration_Controller {
 			$form->set_action( add_query_arg( array( self::get_event_request_parameter() => $event_field->get_value() ) ) );
 		}
 
-		$posts = Ems_Event::get_active_events();
+		$posts = Ems_Event::get_active_events(true);
 		$events = array();
 		foreach ( $posts as $post ) {
 			$event_field = $form->get_input_field( Fum_Conf::$fum_input_field_select_event );
 			if ( $event_field->get_readonly() && $event_field->get_value() != 'ID_' . $post->ID ) {
 				continue;
 			}
-			$start_date = $post->get_start_date_time();
-			$end_date   = $post->get_end_date_time();
 			$title      = $post->post_title;
-			//TODO Niki has set (Location) in the name so this looks bad then
-//			if ( $start_date->getTimestamp() && $end_date->getTimestamp() ) {
-//				$title .= ' (' . date( 'd.m.Y', $start_date->getTimestamp() ) . ' - ' . date( 'd.m.Y', $end_date->getTimestamp() ) . ')';
-//			}
 			$events[] = array( 'title' => $title, 'value' => 'ID_' . $post->ID, 'ID' => $post->ID );
 		}
 
