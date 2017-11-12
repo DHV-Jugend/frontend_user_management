@@ -1,0 +1,28 @@
+{
+  "name": "bit/frontend-user-management",
+  "description": "Frontend user management plugin for wordpress",
+  "license": "GPL-2.0",
+  "authors": [
+    {
+      "name": "Christoph Bessei",
+      "email": "wp-fum@bessei-it.eu"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/Bessei-IT/typo3-surf-extended.git"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "BIT\\FUM\\": "src/Classes/"
+    }
+  },
+  "require": {
+  },
+  "require-dev": {
+    "typo3/surf": "^2.0.0@dev",
+    "bessei-it/typo3-surf-extended": "dev-master"
+  }
+}
