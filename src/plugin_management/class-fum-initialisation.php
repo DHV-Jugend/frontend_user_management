@@ -12,7 +12,7 @@ class Fum_Initialisation
     public static function initiate_plugin()
     {
         //Removes 'next' link in head because this could cause SEO problems and firefox is fetching the link in background which causes more traffic
-        remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
+        remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10);
 
         self::add_action_hooks();
         self::add_filter_hooks();
@@ -40,7 +40,7 @@ class Fum_Initialisation
         $list = '<div class="latest-post">';
 
         while ($q->have_posts()) : $q->the_post();
-            $heading = '<h3><a href="'.get_post_permalink(get_the_ID()) .'">' . get_the_title() . '</a></h3>';
+            $heading = '<h3><a href="' . get_post_permalink(get_the_ID()) . '">' . get_the_title() . '</a></h3>';
             $list .= $heading . '<i>' . get_the_date() . '</i>' . '<br/><p>' . get_the_excerpt() . '</p>';
         endwhile;
 
