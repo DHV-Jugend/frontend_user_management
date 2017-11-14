@@ -35,12 +35,11 @@ class Fum_Mail
 
         $mail->From = get_option('fum_smtp_sender');
         $mail->FromName = get_option('fum_smtp_sender_name');
-        $mail->addAddress($email); // Add a recipient
+        $mail->addAddress($email);
         $mail->Sender = $reply_to;
         $mail->addBCC('anmeldungen@test.dhv-jugend.de');
 
-        $mail->WordWrap = 50; // Set word wrap to 50 characters
-        $mail->isHTML(false); // Set email format to HTML
+        $mail->isHTML(true);
 
         $mail->Subject = $subject;
         $mail->Body = $message;
