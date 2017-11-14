@@ -1,5 +1,8 @@
 <?php
 
+use BIT\EMS\Domain\Repository\EventRegistrationRepository;
+use BIT\EMS\Service\Event\Registration\RegistrationService;
+
 /**
  * @author Christoph Bessei
  * @version
@@ -8,20 +11,24 @@ class Fum_Registered_Event_list
 {
     public static function create_applied_event_form()
     {
+        $eventRegistrationRepository = new EventRegistrationRepository();
+        $eventRegistrationService = new RegistrationService();
+
         if (isset($_REQUEST[Fum_Conf::$fum_unique_name_field_name])) {
             $user_id = get_current_user_id();
-            $registrations = Ems_Event_Registration::get_registrations_of_user($user_id);
+            $registrations = $eventRegistrationRepository->findByParticipant($user_id);
+
             foreach ($registrations as $registration) {
-                $event_id = $registration->get_event_post_id();
+                $event_id = $registration->getEventId();
                 if (isset($_REQUEST['event_' . $event_id])) {
-                    Ems_Event_Registration::delete_event_registration($registration);
+                    $eventRegistrationService->removeByEventRegistration($registration);
                     $event_name = get_post($event_id)->post_title;
                     echo '<p><strong>Abgemeldet von: ' . $event_name . '</strong></p>';
                 }
             }
         }
         $form = Fum_Html_Form::get_form(Fum_Conf::$fum_user_applied_event_form_unique_name);
-        $registrations = Ems_Event_Registration::get_registrations_of_user(get_current_user_id());
+        $registrations = $eventRegistrationRepository->findByParticipant(get_current_user_id());
 
         $event_count = 0;
         if (!empty($registrations)) {
@@ -30,7 +37,7 @@ class Fum_Registered_Event_list
 
             $type_checkbox = new Html_Input_Type_Enum(Html_Input_Type_Enum::CHECKBOX);
             foreach ($registrations as $registration) {
-                $id = $registration->get_event_post_id();
+                $id = $registration->getEventId();
                 $event = Ems_Event::get_event($id);
 
                 //Skip if event does not exist or is not accesible (e.g when set to private)
