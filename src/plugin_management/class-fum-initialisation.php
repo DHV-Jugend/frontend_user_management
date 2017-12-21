@@ -28,8 +28,6 @@ class Fum_Initialisation
             Fum_Conf::$fum_event_registration_page,
             ['Fum_Event_Registration_Controller', 'create_event_registration_form']
         );
-        // TODO: Move to EMS
-        add_shortcode('ems_eventverwaltung', ['Fum_Registered_Event_list', 'create_applied_event_form']);
         add_shortcode('recent_posts', ['Fum_Initialisation', 'my_recent_posts_shortcode']);
         add_shortcode('contact_form', ['Fum_Contact_Form_Controller', 'create_contact_form']);
     }
