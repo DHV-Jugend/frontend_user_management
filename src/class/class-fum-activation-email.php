@@ -1,5 +1,7 @@
 <?php
 
+use BIT\FUM\Settings\Tab\UserRegistrationTab;
+
 /**
  * @author  Christoph Bessei
  * @version 0.01
@@ -105,7 +107,6 @@ class Fum_Activation_Email
         if (get_user_meta($user->ID, self::$activation_key_field, true) === self::$active_user_value) {
             return $user;
         }
-//		return new WP_Error( 'not activated', __( 'User is not active, have you checked your mails for the activation link?' ) );
         return new WP_Error('not_activated', 'Benutzer ist nicht aktiv, hast du den Aktivierungslink in der Willkommen E-Mail benutzt?');
     }
 
@@ -115,7 +116,7 @@ class Fum_Activation_Email
         $activation_code = get_user_meta($user->ID, self::get_activation_key_field(), true);
 
         //Send activation link only if the admin wants to use activation links, otherwise activate user directly
-        if (get_option(Fum_Conf::$fum_register_form_use_activation_mail_option)) {
+        if (UserRegistrationTab::get(UserRegistrationTab::SEND_CONFIRMATION_LINK)) {
             $send_activation_link = true;
         } else {
             update_user_meta($user_id, self::get_activation_key_field(), self::get_active_user_value());
@@ -123,9 +124,10 @@ class Fum_Activation_Email
         }
 
         //Send password only if it was generated randomly
-        if (!get_option(Fum_Conf::$fum_register_form_generate_password_option)) {
+        if (!UserRegistrationTab::get(UserRegistrationTab::GENERATE_RANDOM_PASSWORD)) {
             $password = false;
         }
+
         //Send the welcome mail only if it contains useful informations (activation link and/or password)
         if (false === $password && false === $send_activation_link) {
             return;
@@ -133,20 +135,6 @@ class Fum_Activation_Email
 
         $user_login = stripslashes($user->user_login);
         $user_email = stripslashes($user->user_email);
-
-//		$message = sprintf( __( 'New user registration on your blog %s:', 'frontend-user-management' ), get_option( 'blogname' ) ) . "\r\n\r\n";
-//		$message .= sprintf( __( 'Username: %s', 'frontend-user-management' ), $user_login ) . "\r\n";
-//		$message .= sprintf( __( 'E-mail: %s', 'frontend-user-management' ), $user_email ) . "\r\n";
-//		if ( false !== $password ) {
-//			$message .= sprintf( __( 'Password: %s', 'frontend-user-management' ), $password ) . "\r\n";
-//		}
-//		if ( false !== $send_activation_link ) {
-//			$message .= sprintf( __( 'Activation Link: %s', 'frontend-user-management' ), get_home_url() . "?" . self::get_activation_key_field() . "=" . $activation_code ) . "\r\n";
-//		}
-//
-//		$title = sprintf( __( 'Welcome to %s', 'frontend-user-management' ), get_option( 'blogname' ) );
-
-        //DHV-Jugend
 
         $title = 'Herzlich willkommen bei der DHV-Jugend';
         $message = 'Herlich willkommen bei der DHV-Jugend' . "\n";
@@ -163,7 +151,7 @@ class Fum_Activation_Email
 
         $message .= 'Wir wünschen dir viel Spaß mit der DHV-Jugend!';
         try {
-            Fum_Mail::sendMail($user_email, $title, $message);
+            Fum_Mail::sendPlainMail($user_email, $title, $message);
         } catch (Exception $e) {
             echo $user_email . ' ' . $title . ' ' . $message . "<br/><br/>";
             echo $e->getMessage();
@@ -187,8 +175,3 @@ class Fum_Activation_Email
         return self::$active_user_value;
     }
 }
-
-if (!function_exists('wp_new_user_notification')) :
-//Overwrite wp_new_user_notification from pluggable.php
-//TODO else: throw exception that there is a plugin conflict because two plugins overwrite wp_new_user_notification
-endif;

@@ -1,5 +1,7 @@
 <?php
 
+use BIT\FUM\Settings\Tab\UserRegistrationTab;
+
 /**
  * @author Christoph Bessei
  * @version
@@ -10,11 +12,8 @@ class Fum_Register_Login_Form_Controller
 
     public static function create_register_login_form_header()
     {
-
-        add_filter('the_title', array('Fum_Register_Login_Form_Controller', 'filter_title'), 10, 2);
-        add_filter('wp_title', array('Fum_Register_Login_Form_Controller', 'filter_html_title'), 10, 3);
-
-
+        add_filter('the_title', ['Fum_Register_Login_Form_Controller', 'filter_title'], 10, 2);
+        add_filter('wp_title', ['Fum_Register_Login_Form_Controller', 'filter_html_title'], 10, 3);
     }
 
     public static function filter_title($title, $post_id)
@@ -61,14 +60,16 @@ class Fum_Register_Login_Form_Controller
     public static function create_register_login_form()
     {
 
-        $error = NULL;
+        $error = null;
         if (isset($_REQUEST[Fum_Conf::$fum_unique_name_field_name])) {
             if ($_REQUEST[Fum_Conf::$fum_unique_name_field_name] === Fum_Conf::$fum_login_form_unique_name) {
                 $form = Fum_Html_Form::get_form(Fum_Conf::$fum_login_form_unique_name);
                 $error = self::validate_login_form();
-            } else if ($_REQUEST[Fum_Conf::$fum_unique_name_field_name] === Fum_Conf::$fum_register_form_unique_name) {
-                $form = Fum_Html_Form::get_form(Fum_Conf::$fum_register_form_unique_name);
-                $error = self::validate_register_form($form);
+            } else {
+                if ($_REQUEST[Fum_Conf::$fum_unique_name_field_name] === Fum_Conf::$fum_register_form_unique_name) {
+                    $form = Fum_Html_Form::get_form(Fum_Conf::$fum_register_form_unique_name);
+                    $error = self::validate_register_form($form);
+                }
             }
         }
 
@@ -84,7 +85,7 @@ class Fum_Register_Login_Form_Controller
             exit();
         }
 
-//Print if unique_name_Field was not found OR $error != NULL
+        //Print if unique_name_Field was not found OR $error != NULL
         if (!isset($_REQUEST[Fum_Conf::$fum_unique_name_field_name]) || true !== $error) {
             if (is_wp_error($error)) {
                 echo $error->get_error_message();
@@ -100,12 +101,17 @@ class Fum_Register_Login_Form_Controller
                     if (is_user_logged_in()) {
                         echo '<strong>Da du eingeloggt bist, kannst du dich nicht registrieren</strong>';
                     } else {
-                        if (NULL === $error) {
+                        if (null === $error) {
                             $form = Fum_Html_Form::get_form(Fum_Conf::$fum_register_form_unique_name);
                         }
-                        if (!get_option(Fum_Conf::$fum_register_form_generate_password_option)) {
-                            $password_field = Fum_Html_Input_Field::get_input_field(Fum_Conf::$fum_input_field_password);
-                            $form->insert_input_field_after_unique_name($password_field, Fum_Conf::$fum_input_field_username);
+                        if (!UserRegistrationTab::get(UserRegistrationTab::GENERATE_RANDOM_PASSWORD)) {
+                            $password_field = Fum_Html_Input_Field::get_input_field(
+                                Fum_Conf::$fum_input_field_password
+                            );
+                            $form->insert_input_field_after_unique_name(
+                                $password_field,
+                                Fum_Conf::$fum_input_field_username
+                            );
                         }
                         if (isset($_REQUEST[Fum_Conf::$fum_unique_name_field_name])) {
                             foreach ($form->get_input_fields() as $input_field) {
@@ -122,7 +128,8 @@ class Fum_Register_Login_Form_Controller
                     if ($http_post) {
                         $errors = self::retrieve_password();
                         if (!is_wp_error($errors)) {
-                            $redirect_to = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : get_permalink() . '?checkemail=confirm';
+                            $redirect_to = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : get_permalink(
+                                ) . '?checkemail=confirm';
                             wp_safe_redirect($redirect_to);
                             exit();
                         }
@@ -130,10 +137,11 @@ class Fum_Register_Login_Form_Controller
 
 
                     if (isset($_GET['error'])) {
-                        if ('invalidkey' == $_GET['error'])
+                        if ('invalidkey' == $_GET['error']) {
                             $errors->add('invalidkey', __('Sorry, that key does not appear to be valid.'));
-                        elseif ('expiredkey' == $_GET['error'])
+                        } elseif ('expiredkey' == $_GET['error']) {
                             $errors->add('expiredkey', __('Sorry, that key has expired. Please try again.'));
+                        }
                     }
 
                     $lostpassword_redirect = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
@@ -190,7 +198,11 @@ class Fum_Register_Login_Form_Controller
                         <a href="<?php echo esc_url(wp_login_url()); ?>"><?php _e('Log in') ?></a>
                         <?php
                         if (get_option('users_can_register')) :
-                            $registration_url = sprintf('<a href="%s">%s</a>', esc_url(wp_registration_url()), __('Register'));
+                            $registration_url = sprintf(
+                                '<a href="%s">%s</a>',
+                                esc_url(wp_registration_url()),
+                                __('Register')
+                            );
                             /**
                              * Filter the registration URL below the login form.
                              *
@@ -219,8 +231,9 @@ class Fum_Register_Login_Form_Controller
                     }
                     $errors = new WP_Error();
 
-                    if (isset($_REQUEST['pass1']) && $_REQUEST['pass1'] != $_REQUEST['pass2'])
+                    if (isset($_REQUEST['pass1']) && $_REQUEST['pass1'] != $_REQUEST['pass2']) {
                         $errors->add('password_reset_mismatch', __('The passwords do not match.'));
+                    }
 
                     /**
                      * Fires before the password reset procedure is validated.
@@ -235,17 +248,24 @@ class Fum_Register_Login_Form_Controller
                     if ((!$errors->get_error_code()) && isset($_REQUEST['pass1']) && !empty($_REQUEST['pass1'])) {
                         reset_password($user, $_REQUEST['pass1']);
                         echo '<p><strong>Passwortänderung war erfolgreich</strong></p>';
-                        echo '<a href="' . get_permalink(get_option(Fum_Conf::$fum_register_login_page_name)) . '">Anmelden</a>';
+                        echo '<a href="' . get_permalink(
+                                get_option(Fum_Conf::$fum_register_login_page_name)
+                            ) . '">Anmelden</a>';
                         exit();
                     }
 
-//					wp_enqueue_script( 'utils' );
+                    //					wp_enqueue_script( 'utils' );
                     //Needed for password strength estimation
-//                    wp_enqueue_script('user-profile');
+                    //                    wp_enqueue_script('user-profile');
 
                     ?>
                     <form name="resetpassform" id="resetpassform"
-                          action=" <?php echo esc_url(get_permalink() . '?action=resetpass&key=' . urlencode($_GET['key']) . '&login=' . urlencode($_GET['login']), 'login_post'); ?>"
+                          action=" <?php echo esc_url(
+                              get_permalink() . '?action=resetpass&key=' . urlencode(
+                                  $_GET['key']
+                              ) . '&login=' . urlencode($_GET['login']),
+                              'login_post'
+                          ); ?>"
                           method="post" autocomplete="off">
                         <input type="hidden" id="user_login" value="<?php echo esc_attr($_GET['login']); ?>"
                                autocomplete="off"/>
@@ -262,7 +282,9 @@ class Fum_Register_Login_Form_Controller
                                        autocomplete="off"/></label>
                         </p>
 
-                        <p class="description indicator-hint"><?php _e('Hint: The password should be at least seven characters long. To make it stronger, use upper and lower case letters, numbers and symbols like ! " ? $ % ^ &amp; ).'); ?></p>
+                        <p class="description indicator-hint"><?php _e(
+                                'Hint: The password should be at least seven characters long. To make it stronger, use upper and lower case letters, numbers and symbols like ! " ? $ % ^ &amp; ).'
+                            ); ?></p>
                         <br class="clear"/>
 
                         <p class="submit">
@@ -276,7 +298,11 @@ class Fum_Register_Login_Form_Controller
                         <a href="<?php echo esc_url(wp_login_url()); ?>"><?php _e('Log in'); ?></a>
                         <?php
                         if (get_option('users_can_register')) :
-                            $registration_url = sprintf('<a href="%s">%s</a>', esc_url(wp_registration_url()), __('Register'));
+                            $registration_url = sprintf(
+                                '<a href="%s">%s</a>',
+                                esc_url(wp_registration_url()),
+                                __('Register')
+                            );
                             /** This filter is documented in wp-login.php */
                             echo ' | ' . apply_filters('register', $registration_url);
                         endif;
@@ -290,8 +316,10 @@ class Fum_Register_Login_Form_Controller
                     //Do not check nonce if logout comes from phpBB
                     if (!isset($_REQUEST['redirect_to'])) {
                         check_admin_referer('log-out');
-                    } else if ($_REQUEST['redirect_to'] != 'https://forum.schwarzwald-falke.de') {
-                        check_admin_referer('log-out');
+                    } else {
+                        if ($_REQUEST['redirect_to'] != 'https://forum.schwarzwald-falke.de') {
+                            check_admin_referer('log-out');
+                        }
                     }
 
                     wp_logout();
@@ -309,7 +337,14 @@ class Fum_Register_Login_Form_Controller
                     } else {
                         $form = Fum_Html_Form::get_form(Fum_Conf::$fum_login_form_unique_name);
                         if (isset($_REQUEST['interim-login']) && 1 == $_REQUEST['interim-login']) {
-                            $field = new Fum_Html_Input_Field('interim-login', 'interim-login', new Html_Input_Type_Enum(Html_Input_Type_Enum::HIDDEN), '', 'interim-login', false);
+                            $field = new Fum_Html_Input_Field(
+                                'interim-login',
+                                'interim-login',
+                                new Html_Input_Type_Enum(Html_Input_Type_Enum::HIDDEN),
+                                '',
+                                'interim-login',
+                                false
+                            );
                             $field->set_value(1);
                             $form->add_input_field($field);
                         }
@@ -381,7 +416,7 @@ class Fum_Register_Login_Form_Controller
         $form->set_values_from_array($_REQUEST);
         $errors = $form->validate();
         if (true === $errors) {
-            if (get_option(Fum_Conf::$fum_register_form_generate_password_option)) {
+            if (UserRegistrationTab::get(UserRegistrationTab::GENERATE_RANDOM_PASSWORD)) {
                 //Wordpress uses sometimes user_pass (wp_insert_usert) and sometimes user_password, this is a workaround for this problem
                 $_REQUEST['user_pass'] = wp_generate_password();
                 $_REQUEST[Fum_Conf::$fum_input_field_password] = $_REQUEST['user_pass'];
@@ -391,13 +426,19 @@ class Fum_Register_Login_Form_Controller
             if (is_wp_error($ID)) {
                 $errors = $ID;
             } else {
-                $id_field = new Fum_Html_Input_Field('fum_ID', 'fum_ID', new Html_Input_Type_Enum(Html_Input_Type_Enum::HIDDEN), '', '', '');
+                $id_field = new Fum_Html_Input_Field(
+                    'fum_ID',
+                    'fum_ID',
+                    new Html_Input_Type_Enum(Html_Input_Type_Enum::HIDDEN),
+                    '',
+                    '',
+                    ''
+                );
                 $id_field->set_value($ID);
                 $form->add_input_field($id_field);
                 Fum_User::observe_object($form);
                 $form->save();
             }
-
 
         }
         return $errors;
@@ -419,13 +460,19 @@ class Fum_Register_Login_Form_Controller
 
         if (empty($_REQUEST['user_login'])) {
             $errors->add('empty_username', __('<strong>ERROR</strong>: Enter a username or e-mail address.'));
-        } else if (strpos($_REQUEST['user_login'], '@')) {
-            $user_data = get_user_by('email', trim($_REQUEST['user_login']));
-            if (empty($user_data))
-                $errors->add('invalid_email', __('<strong>ERROR</strong>: There is no user registered with that email address.'));
         } else {
-            $login = trim($_REQUEST['user_login']);
-            $user_data = get_user_by('login', $login);
+            if (strpos($_REQUEST['user_login'], '@')) {
+                $user_data = get_user_by('email', trim($_REQUEST['user_login']));
+                if (empty($user_data)) {
+                    $errors->add(
+                        'invalid_email',
+                        __('<strong>ERROR</strong>: There is no user registered with that email address.')
+                    );
+                }
+            } else {
+                $login = trim($_REQUEST['user_login']);
+                $user_data = get_user_by('login', $login);
+            }
         }
 
         /**
@@ -435,8 +482,9 @@ class Fum_Register_Login_Form_Controller
          */
         do_action('lostpassword_post');
 
-        if ($errors->get_error_code())
+        if ($errors->get_error_code()) {
             return $errors;
+        }
 
         if (!$user_data) {
             $errors->add('invalidcombo', __('<strong>ERROR</strong>: Invalid username or e-mail.'));
@@ -475,10 +523,13 @@ class Fum_Register_Login_Form_Controller
          */
         $allow = apply_filters('allow_password_reset', true, $user_data->ID);
 
-        if (!$allow)
+        if (!$allow) {
             return new WP_Error('no_password_reset', __('Password reset is not allowed for this user'));
-        else if (is_wp_error($allow))
-            return $allow;
+        } else {
+            if (is_wp_error($allow)) {
+                return $allow;
+            }
+        }
 
         // Generate something random for a password reset key.
         $key = wp_generate_password(20, false);
@@ -504,7 +555,7 @@ class Fum_Register_Login_Form_Controller
             $wp_hasher = new PasswordHash(8, true);
         }
         $hashed = time() . ':' . $wp_hasher->HashPassword($key);
-        $key_saved = $wpdb->update($wpdb->users, array('user_activation_key' => $hashed), array('user_login' => $user_login));
+        $key_saved = $wpdb->update($wpdb->users, ['user_activation_key' => $hashed], ['user_login' => $user_login]);
         if (false === $key_saved) {
             return new WP_Error('no_password_key_update', __('Could not save password reset key to database.'));
         }
@@ -514,14 +565,19 @@ class Fum_Register_Login_Form_Controller
         $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";
         $message .= __('If this was a mistake, just ignore this email and nothing will happen.') . "\r\n\r\n";
         $message .= __('To reset your password, visit the following address:') . "\r\n\r\n";
-        $message .= '<' . network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login), 'login') . ">\r\n";
+        $message .= '<' . network_site_url(
+                "wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login),
+                'login'
+            ) . ">\r\n";
 
-        if (is_multisite())
+        if (is_multisite()) {
             $blogname = $GLOBALS['current_site']->site_name;
-        else
+        } else
             // The blogname option is escaped with esc_html on the way into the database in sanitize_option
             // we want to reverse this for the plain text arena of emails.
+        {
             $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+        }
 
         $title = sprintf(__('[%s] Password Reset'), $blogname);
 
@@ -542,8 +598,8 @@ class Fum_Register_Login_Form_Controller
          * @param string $key The activation key.
          */
         $message = apply_filters('retrieve_password_message', $message, $key);
-        Fum_Mail::sendMail($user_email, $title, $message);
-        
+        Fum_Mail::sendPlainMail($user_email, $title, $message);
+
         return true;
     }
 }

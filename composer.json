@@ -12,6 +12,10 @@
     {
       "type": "vcs",
       "url": "https://github.com/Bessei-IT/typo3-surf-extended.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/clubdrei/wp-settings.git"
     }
   ],
   "autoload": {
@@ -19,7 +23,10 @@
       "BIT\\FUM\\": "src/Classes/"
     }
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "require": {
+    "c3/wp-settings": "dev-master"
   },
   "require-dev": {
     "typo3/surf": "^2.0.0@dev",

@@ -3,17 +3,16 @@
 class Frontend_User_Management
 {
     protected $option_fum_category_id = 'fum_category';
-    protected static $plugin_path = NULL;
+    protected static $plugin_path = null;
 
     public function __construct()
     {
-        //This change should only be visible for sites with experimental branch
-
-        spl_autoload_register(array($this, 'autoload'));
+        spl_autoload_register([$this, 'autoload']);
         //Set path to plugin dir
         Frontend_User_Management::$plugin_path = plugin_dir_path(__FILE__);
         Fum_Initialisation::initiate_plugin();
-        add_filter('tc_post_metas', array($this, 'remove_meta'));
+        \BIT\FUM\PluginManagement\Initialisation::run();
+        add_filter('tc_post_metas', [$this, 'remove_meta']);
     }
 
     function remove_meta($html)
@@ -63,9 +62,4 @@ class Frontend_User_Management
     {
         return self::$plugin_path;
     }
-
-
 }
-
-new Frontend_User_Management(); //start plugin
-

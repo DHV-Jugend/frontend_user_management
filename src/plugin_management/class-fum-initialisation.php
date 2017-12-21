@@ -1,13 +1,15 @@
 <?php
 
+use BIT\FUM\Settings\Tab\BasicTab;
+use BIT\FUM\Settings\Tab\UserRegistrationTab;
+
 /**
  * @author Christoph Bessei
  * @version
  */
 class Fum_Initialisation
 {
-
-    const ADMIN_BAR_CAP_FILTER = Fum_Conf::FUM_NAME_PREFIX . 'admin_bar_cap_filter';
+    const ADMIN_BAR_CAP_FILTER = Fum_Conf::PREFIX . 'admin_bar_cap_filter';
 
     public static function initiate_plugin()
     {
@@ -52,13 +54,8 @@ class Fum_Initialisation
 
     protected static function add_action_hooks()
     {
-
         //Action hook for changing
         add_action('get_header', ['Fum_Initialisation', 'check_shortcode']);
-        //Register plugin settings
-        add_action('admin_init', ['Fum_Option_Page_Controller', 'register_settings']);
-        //Create plugin admin menu page
-        add_action('admin_menu', ['Fum_Option_Page_Controller', 'create_menu']);
 
         add_action('init', ['Fum_Post', 'fum_register_post_type']);
         add_action('init', [new Fum_Front_End_Form(), 'buffer_content_if_front_end_form']);
@@ -71,8 +68,8 @@ class Fum_Initialisation
         //Check if url contains activation key and if yes, prepend "You have successfully your account etc.."
         add_filter('the_content', ['Fum_Activation_Email', 'activate_user']);
 
-        if (get_option(Fum_Conf::$fum_register_form_use_activation_mail_option)) {
-            //Check on login  if user is activated
+        if (UserRegistrationTab::get(UserRegistrationTab::SEND_CONFIRMATION_LINK)) {
+            //Check on login if user has clicked confirmation link
             add_filter('wp_authenticate_user', ['Fum_Activation_Email', 'authenticate'], 10, 1);
         }
 
@@ -84,12 +81,12 @@ class Fum_Initialisation
         //Redirect wp-admin/profile.php (Only redirect if the user edits his OWN profile!)
         add_action('show_user_profile', ['Fum_Redirect', 'redirect_own_profile_edit']);
 
-        if (get_option(Fum_Conf::$fum_general_option_group_hide_wp_login_php)) {
+        if (BasicTab::get(BasicTab::USE_FRONTEND_LOGIN)) {
             //Redirect wp-login.php
             add_action('login_init', ['Fum_Redirect', 'redirect_wp_login_php']);
         }
 
-        if (get_option(Fum_Conf::$fum_general_option_group_hide_dashboard_from_non_admin)) {
+        if (BasicTab::get(BasicTab::HIDE_ADMIN_BAR_FOR_NORMAL_USER)) {
             add_action('wp_dashboard_setup', ['Fum_Redirect', 'redirect_to_home_if_user_cannot_manage_options']);
         }
     }

@@ -6,6 +6,7 @@ use BIT\EMS\Service\Event\Registration\RegistrationService;
 /**
  * @author Christoph Bessei
  * @version
+ * @TODO: Move to EMS
  */
 class Fum_Registered_Event_list
 {
