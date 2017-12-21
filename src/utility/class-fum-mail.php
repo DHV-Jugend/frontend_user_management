@@ -2,6 +2,7 @@
 
 use BIT\FUM\Exception\MailNotSendException;
 use BIT\FUM\Settings\Tab\MailTab;
+use BIT\FUM\Utility\StringUtility;
 
 /**
  * @author Christoph Bessei
@@ -12,37 +13,50 @@ class Fum_Mail
     const MAIL_CHARSET = 'UTF-8';
 
     /**
-     * @param $to
-     * @param $subject
-     * @param $message
+     * @param string $to
+     * @param string $subject
+     * @param string $message
+     * @param string|null $replyTo
      * @param array $additionalOptions
      * @return bool
      * @throws \BIT\FUM\Exception\MailNotSendException
      * @throws \phpmailerException
      */
-    public static function sendHtmlMail($to, $subject, $message, $additionalOptions = [])
-    {
-        return static::sendMail($to, $subject, $message, true, $additionalOptions);
+    public static function sendHtmlMail(
+        string $to,
+        string $subject,
+        string $message,
+        string $replyTo = null,
+        array $additionalOptions = []
+    ) {
+        return static::sendMail($to, $subject, $message, true, $replyTo, $additionalOptions);
     }
 
     /**
      * @param string $to
      * @param string $subject
      * @param string $message
+     * @param string|null $replyTo
      * @param array $additionalOptions
      * @return bool
      * @throws \BIT\FUM\Exception\MailNotSendException
      * @throws \phpmailerException
      */
-    public static function sendPlainMail(string $to, string $subject, string $message, array $additionalOptions = [])
-    {
-        return static::sendMail($to, $subject, $message, false, $additionalOptions);
+    public static function sendPlainMail(
+        string $to,
+        string $subject,
+        string $message,
+        string $replyTo = null,
+        array $additionalOptions = []
+    ) {
+        return static::sendMail($to, $subject, $message, false, $replyTo, $additionalOptions);
     }
 
     /**
      * @param string $to
      * @param string $subject
      * @param string $message
+     * @param string|null $replyTo CSV list of Reply-To addresses
      * @param bool $isHtml
      * @param array $additionalOptions
      * @return bool
@@ -53,6 +67,7 @@ class Fum_Mail
         string $to,
         string $subject,
         string $message,
+        string $replyTo = null,
         bool $isHtml = false,
         array $additionalOptions = []
     ) {
@@ -65,6 +80,10 @@ class Fum_Mail
         $phpMailer->Subject = $subject;
         $phpMailer->Body = $message;
 
+        foreach (StringUtility::trimExplode(',', $replyTo) as $entry) {
+            $phpMailer->addReplyTo($entry);
+        }
+
         static::determineAndSetMailOptions($phpMailer);
         foreach ($additionalOptions as $name => $value) {
             $phpMailer->$name = $value;
@@ -73,6 +92,7 @@ class Fum_Mail
         if (defined('WRITE_MAILS_TO_FILE') && WRITE_MAILS_TO_FILE) {
             error_log('SEND MAIL');
             error_log('TO: ' . var_export($phpMailer->getToAddresses(), true));
+            error_log('REPLY-TO:' . var_export($phpMailer->getReplyToAddresses(), true));
             error_log('Subject: ' . $phpMailer->Subject);
             error_log('Body: ' . $phpMailer->Body);
         } else {
@@ -137,28 +157,20 @@ class Fum_Mail
             }
         }
 
-        // Handle Reply-To addresses
-        $replyToAddresses = MailTab::get(MailTab::REPLY_TO_ADDRESSES);
-        if (!empty($replyToAddresses)) {
-            $replyToAddresses = array_map('trim', explode(',', $replyToAddresses));
-            foreach ($replyToAddresses as $replyToAddress) {
-                if (empty($replyToAddress)) {
-                    continue;
-                }
+        // Set Reply-To addresses, if there are none set so far
+        if (empty($phpMailer->getReplyToAddresses())) {
+            $replyToAddresses = MailTab::get(MailTab::REPLY_TO_ADDRESSES);
+            foreach (StringUtility::trimExplode(',', $replyToAddresses) as $replyToAddress) {
                 $phpMailer->addReplyTo($replyToAddress);
             }
         }
 
-        // Handle BCC addresses
+
+        // Set BCC addresses
         $bccAddresses = MailTab::get(MailTab::BCC_ADDRESSES);
-        if (!empty($bccAddresses)) {
-            $bccAddresses = array_map('trim', explode(',', $bccAddresses));
-            foreach ($bccAddresses as $bccAddress) {
-                if (empty($bccAddress)) {
-                    continue;
-                }
-                $phpMailer->addBCC($bccAddress);
-            }
+        foreach (StringUtility::trimExplode(',', $bccAddresses) as $bccAddress) {
+
+            $phpMailer->addBCC($bccAddress);
         }
 
         return $phpMailer;
