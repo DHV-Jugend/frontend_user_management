@@ -91,6 +91,9 @@ class Fum_Html_Input_Field extends Fum_Observable implements Fum_Observer
             $unique_name = $input_field->get_unique_name();
         }
         $input_fields = self::get_input_fields();
+
+        $input_fields = apply_filters('fum_get_input_field', $input_fields);
+        
         foreach ($input_fields as $input_field) {
             if ($input_field->get_unique_name() === $unique_name) {
                 return $input_field;
