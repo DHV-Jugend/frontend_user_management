@@ -83,8 +83,10 @@ class Fum_Mail
         $phpMailer->Subject = $subject;
         $phpMailer->Body = $message;
 
-        foreach (StringUtility::trimExplode(',', $replyTo) as $entry) {
-            $phpMailer->addReplyTo($entry);
+        if (!is_null($replyTo)) {
+            foreach (StringUtility::trimExplode(',', $replyTo) as $entry) {
+                $phpMailer->addReplyTo($entry);
+            }
         }
 
         static::determineAndSetMailOptions($phpMailer);
