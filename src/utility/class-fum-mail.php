@@ -29,7 +29,7 @@ class Fum_Mail
         string $replyTo = null,
         array $additionalOptions = []
     ) {
-        return static::sendMail($to, $subject, $message, true, $replyTo, $additionalOptions);
+        return static::sendMail($to, $subject, $message, $replyTo, true, $additionalOptions);
     }
 
     /**
@@ -49,7 +49,7 @@ class Fum_Mail
         string $replyTo = null,
         array $additionalOptions = []
     ) {
-        return static::sendMail($to, $subject, $message, false, $replyTo, $additionalOptions);
+        return static::sendMail($to, $subject, $message, $replyTo, false, $additionalOptions);
     }
 
     /**
