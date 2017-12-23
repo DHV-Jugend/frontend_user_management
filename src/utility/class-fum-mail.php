@@ -165,17 +165,19 @@ class Fum_Mail
         // Set Reply-To addresses, if there are none set so far
         if (empty($phpMailer->getReplyToAddresses())) {
             $replyToAddresses = MailTab::get(MailTab::REPLY_TO_ADDRESSES);
-            foreach (StringUtility::trimExplode(',', $replyToAddresses) as $replyToAddress) {
-                $phpMailer->addReplyTo($replyToAddress);
+            if (!is_null($replyToAddresses)) {
+                foreach (StringUtility::trimExplode(',', $replyToAddresses) as $replyToAddress) {
+                    $phpMailer->addReplyTo($replyToAddress);
+                }
             }
         }
 
-
         // Set BCC addresses
         $bccAddresses = MailTab::get(MailTab::BCC_ADDRESSES);
-        foreach (StringUtility::trimExplode(',', $bccAddresses) as $bccAddress) {
-
-            $phpMailer->addBCC($bccAddress);
+        if (!is_null($bccAddresses)) {
+            foreach (StringUtility::trimExplode(',', $bccAddresses) as $bccAddress) {
+                $phpMailer->addBCC($bccAddress);
+            }
         }
 
         return $phpMailer;
