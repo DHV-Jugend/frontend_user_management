@@ -42,7 +42,7 @@ class Fum_Activation
             'fum_input_field_phone_number' => ['Telefonnummer', false],
             'fum_input_field_mobile_number' => ['Handynummer', false],
             'fum_input_field_dhv_member_number' => ['DHV MitgliedsNr.', false],
-            'fum_input_field_license_number' => ['Lizenznummer (Fußgänger: Feld bitte leer lassen)', false],
+            'fum_input_field_license_number' => ['Lizenznummer', false],
 
             'fum_input_field_emergency_contact_surname' => ['Notfallkontakt Nachname', false],
             'fum_input_field_emergency_contact_forename' => ['Notfallkontakt Vorname', false],
