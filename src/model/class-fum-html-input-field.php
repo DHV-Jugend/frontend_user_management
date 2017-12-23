@@ -579,15 +579,17 @@ class Fum_Html_Input_Field extends Fum_Observable implements Fum_Observer
      *
      * @return bool|WP_Error
      */
-    private
-    static function not_empty_callback(
-        Fum_Html_Input_Field $input_field,
-        array $params = []
-    ) {
+    private static function not_empty_callback(Fum_Html_Input_Field $input_field, array $params = [])
+    {
         $value = trim($input_field->get_value());
         if (!empty($value)) {
             return true;
         }
+
+        if (0 < strlen(trim($value))) {
+            return true;
+        }
+
         if ($input_field->get_type() == Html_Input_Type_Enum::CHECKBOX) {
             return new WP_Error($input_field->get_unique_name(), $input_field->get_title() . ' muss ausgewählt sein');
 
