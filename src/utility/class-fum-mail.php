@@ -29,6 +29,9 @@ class Fum_Mail
         string $replyTo = null,
         array $additionalOptions = []
     ) {
+        // Strip tags, not allowed in subject
+        $subject = trim(strip_tags($subject));
+
         return static::sendMail($to, $subject, $message, $replyTo, true, $additionalOptions);
     }
 
