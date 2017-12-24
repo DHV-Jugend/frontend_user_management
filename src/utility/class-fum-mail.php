@@ -83,13 +83,8 @@ class Fum_Mail
         $phpMailer->Subject = $subject;
         $phpMailer->Body = $message;
 
-        if (!is_null($replyTo)) {
-            foreach (StringUtility::trimExplode(',', $replyTo) as $entry) {
-                $phpMailer->addReplyTo($entry);
-            }
-        }
+        static::determineAndSetMailOptions($phpMailer, $replyTo);
 
-        static::determineAndSetMailOptions($phpMailer);
         foreach ($additionalOptions as $name => $value) {
             $phpMailer->$name = $value;
         }
@@ -124,9 +119,8 @@ class Fum_Mail
      * @return \PHPMailer
      * @throws \phpmailerException
      */
-    protected static function determineAndSetMailOptions(\PHPMailer $phpMailer)
+    protected static function determineAndSetMailOptions(\PHPMailer $phpMailer, $replyTo)
     {
-
         $fromAddress = MailTab::get(MailTab::FROM_ADDRESS);
         $fromName = MailTab::get(MailTab::FROM_NAME);
 
@@ -162,13 +156,19 @@ class Fum_Mail
             }
         }
 
-        // Set Reply-To addresses, if there are none set so far
-        if (empty($phpMailer->getReplyToAddresses())) {
+        // TODO Investigate Reply-To handling. Seems buggy if event manger is also the participant
+        if (empty($replyTo)) {
+            // Default address from options page
             $replyToAddresses = MailTab::get(MailTab::REPLY_TO_ADDRESSES);
             if (!is_null($replyToAddresses)) {
                 foreach (StringUtility::trimExplode(',', $replyToAddresses) as $replyToAddress) {
                     $phpMailer->addReplyTo($replyToAddress);
                 }
+            }
+        } else {
+            // Mail specific replyTo
+            foreach (StringUtility::trimExplode(',', $replyTo) as $entry) {
+                $phpMailer->addReplyTo($entry);
             }
         }
 
