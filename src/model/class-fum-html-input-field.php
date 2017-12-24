@@ -93,7 +93,7 @@ class Fum_Html_Input_Field extends Fum_Observable implements Fum_Observer
         $input_fields = self::get_input_fields();
 
         $input_fields = apply_filters('fum_get_input_field', $input_fields);
-        
+
         foreach ($input_fields as $input_field) {
             if ($input_field->get_unique_name() === $unique_name) {
                 return $input_field;
@@ -498,6 +498,7 @@ class Fum_Html_Input_Field extends Fum_Observable implements Fum_Observer
     public function validate($force_new_validation = false)
     {
         if ($force_new_validation || false === $this->validation_result) {
+            do_action('fum_form_field_before_validation', $this);
             if (null === $this->validate_callback) {
                 if (true === $this->get_required()) {
                     //If field is required and no special validate callback is set, we check if it's NOT empty
@@ -533,19 +534,17 @@ class Fum_Html_Input_Field extends Fum_Observable implements Fum_Observer
                     $this->validation_result = true;
                 } else {
                     $this->validation_result = call_user_func($this->validate_callback, $this, $this->validate_params);
-
                 }
             }
+            do_action('fum_form_field_after_validation', $this);
         }
         return $this->validation_result;
-
     }
 
     /**
      * @return bool
      */
-    public
-    function is_validated()
+    public function is_validated()
     {
         if (false === $this->validation_result) {
             return false;
@@ -553,8 +552,7 @@ class Fum_Html_Input_Field extends Fum_Observable implements Fum_Observer
         return true;
     }
 
-    public
-    function save()
+    public function save()
     {
         $validation = $this->validation_result;
         if (false === $this->validation_result) {
@@ -568,10 +566,8 @@ class Fum_Html_Input_Field extends Fum_Observable implements Fum_Observer
         return $validation;
     }
 
-    public
-    function update(
-        Fum_Observable $o
-    ) {
+    public function update(Fum_Observable $o)
+    {
     }
 
 

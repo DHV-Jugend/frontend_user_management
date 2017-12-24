@@ -35,15 +35,15 @@ class Fum_Activation
             'fum_input_field_postcode' => [
                 'Postleitzahl',
                 false,
-                ['Fum_Html_Input_Field', 'integer_callback'],
+                [Fum_Html_Input_Field::class, 'integer_callback'],
                 ['length' => [4, 5]],
             ],
             'fum_input_field_state' => ['Bundesland', false],
             'fum_input_field_phone_number' => ['Telefonnummer', false],
             'fum_input_field_mobile_number' => ['Handynummer', false],
-            'fum_input_field_dhv_member_number' => ['DHV MitgliedsNr.', false],
+            // Do not require member and license number by default. They are only required if an user registers as pilot for events
+            'fum_input_field_dhv_member_number' => ['DHV MitgliedsNr.', false,],
             'fum_input_field_license_number' => ['Lizenznummer', false],
-
             'fum_input_field_emergency_contact_surname' => ['Notfallkontakt Nachname', false],
             'fum_input_field_emergency_contact_forename' => ['Notfallkontakt Vorname', false],
             'fum_input_field_emergency_phone_number' => ['Notfallkontakt Telefonnummer', false],
@@ -73,7 +73,10 @@ class Fum_Activation
                 [
                     ['title' => 'Gleitschirm', 'value' => 'gleitschirm'],
                     ['title' => 'Drachen', 'value' => 'drachen'],
-                    ['title' => 'Fußgänger', 'value' => 'fussgaenger'],
+                    [
+                        'title' => 'Fußgänger (DHV Mitgliedsnr. und Lizenznummer bitte leer lassen)',
+                        'value' => 'fussgaenger',
+                    ],
                 ],
             ],
         ],
