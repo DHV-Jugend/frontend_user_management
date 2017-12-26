@@ -312,16 +312,7 @@ class Fum_Register_Login_Form_Controller
                     <?php
                     break;
                 case 'logout':
-                    //TODO Workaround so wp-united does work
-                    //Do not check nonce if logout comes from phpBB
-                    if (!isset($_REQUEST['redirect_to'])) {
-                        check_admin_referer('log-out');
-                    } else {
-                        if ($_REQUEST['redirect_to'] != 'https://forum.schwarzwald-falke.de') {
-                            check_admin_referer('log-out');
-                        }
-                    }
-
+                    check_admin_referer('log-out');
                     wp_logout();
                     if (isset($_REQUEST['redirect_to'])) {
                         wp_redirect($_REQUEST['redirect_to']);
